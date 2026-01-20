@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portofolio Ui Ux Designer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;700;800&display=swap');
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #020617;
+            color: #f8fafc;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow-x: hidden;
+        }
+
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            outline: none;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 24px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-card:hover {
+            transform: translateY(-10px);
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(56, 189, 248, 0.3);
+        }
+
+        .hero-text {
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            line-height: 1.1;
+        }
+
+        .nav-link {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #38bdf8;
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 5rem 8%;
+        }
+
+        #modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(12px);
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        #modal-content {
+            transform: scale(0.9);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .active-modal {
+            display: flex !important;
+            opacity: 1 !important;
+        }
+
+        .active-modal #modal-content {
+            transform: scale(1);
+        }
+
+        .glow-sphere {
+            position: fixed;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(56, 189, 248, 0.15) 0%, rgba(56, 189, 248, 0) 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: -1;
+            filter: blur(40px);
+        }
+
+        .cta-floating {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 40;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .btn-glow {
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+            animation: pulse-glow 2s infinite;
+        }
+
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 10px rgba(56, 189, 248, 0.4); }
+            50% { box-shadow: 0 0 25px rgba(56, 189, 248, 0.7); }
+            100% { box-shadow: 0 0 10px rgba(56, 189, 248, 0.4); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="glow-sphere" id="glow-1"></div>
+    <div class="glow-sphere" id="glow-2"></div>
+
+    <div class="cta-floating">
+        <a href="https://wa.me/0hgfghfghfgh" target="_blank" class="bg-emerald-500 text-white p-4 rounded-full shadow-2xl hover:scale-110 transition-transform flex items-center justify-center btn-glow group">
+            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.588-5.946 0-6.556 5.332-11.888 11.888-11.888 3.176 0 6.164 1.236 8.41 3.483 2.247 2.247 3.482 5.234 3.482 8.411 0 6.556-5.332 11.888-11.888 11.888-2.018 0-3.997-.51-5.755-1.48L0 24zm6.49-4.298c1.552.922 3.23 1.408 4.953 1.408 5.4 0 9.792-4.392 9.792-9.792 0-2.618-1.02-5.079-2.872-6.932-1.854-1.852-4.312-2.871-6.931-2.871-5.4 0-9.792 4.392-9.792 9.792 0 1.83.51 3.615 1.474 5.163l-1.01 3.69 3.79-.993z"/></svg>
+            <span class="absolute right-16 bg-emerald-500 px-4 py-2 rounded-lg text-sm font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">Chat Sekarang</span>
+        </a>
+    </div>
+
+   <nav class="fixed top-0 left-0 w-full p-6 z-50 flex justify-end items-center backdrop-blur-md border-b border-white/5 gap-8">
+    <div class="text-2xl font-extrabold tracking-tighter text-sky-400 mr-auto">My.Portofolio</div>
+    
+    <div class="hidden md:flex gap-8 font-medium items-center">
+        <a href="#home" class="nav-link">Beranda</a>
+        <a href="#work" class="nav-link">Karya</a>
+        <a href="#about" class="nav-link">Tentang</a>
+        <div class="h-6 w-[1px] bg-white/10 mx-2"></div>
+    </div>
+    
+    <a href="https://wa.me/0vvvbvbvb?text=Halo%20GD.STUDIO,%20saya%20ingin%20memulai%20proyek%20baru" 
+       target="_blank" 
+       class="bg-sky-500 hover:bg-sky-400 px-8 py-3 rounded-full font-bold transition-all shadow-lg shadow-sky-500/20 active:scale-95 btn-glow text-center">
+        Mulai Proyek
+    </a>
+</nav>
+
+    <canvas id="bg-canvas"></canvas>
+
+    <section id="home" class="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+        <div class="order-2 lg:order-1">
+            <h1 class="hero-text font-extrabold mb-6 opacity-0" id="hero-title">
+                Saya,<br><span class="text-sky-500 italic">Achmad Ridho</span>
+            </h1>
+            <p class="text-xl max-w-xl text-slate-400 mb-8 opacity-0" id="hero-subtitle">
+                Desainer Grafis yang fokus pada kejelasan visual dan inovasi 3D untuk brand masa depan.
+            </p>
+            <div class="flex flex-wrap gap-4 opacity-0" id="hero-btns">
+                <a href="#work" class="bg-sky-500 text-white px-8 py-4 rounded-full font-bold hover:bg-sky-400 transition-all shadow-xl shadow-sky-500/10">Lihat Portofolio</a>
+                <a href="#about" class="bg-white/5 border border-white/10 px-8 py-4 rounded-full font-bold hover:bg-white/10 transition-all">Tentang Saya</a>
+            </div>
+        </div>
+      <div class="order-1 lg:order-2 flex justify-center lg:justify-center opacity-0" id="hero-img-container">
+    <div class="relative w-48 h-48 md:w-64 md:h-64 lg:w-[320px] lg:h-[320px]">
+        <div class="absolute inset-0 bg-sky-500 rounded-[32px] rotate-6 blur-xl opacity-20 animate-pulse"></div>
+        
+        <div class="absolute inset-0 overflow-hidden rounded-[32px] border border-white/10 bg-slate-800 shadow-2xl">
+            <img src="Assets/hero.png" 
+                 alt="Foto Profil" 
+                 class="w-full h-full object-cover">
+        </div>
+    </div>
+</div>
+    </section>
+
+    <section id="work" class="flex-col">
+        <div class="w-full mb-16 text-center md:text-left">
+            <h2 class="text-4xl font-bold mb-4 reveal">Graphic Design</h2>
+            <div class="h-1 w-20 bg-sky-500 mx-auto md:mx-0 reveal"></div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full mb-12">
+            <div class="glass-card p-6 reveal group cursor-pointer" onclick="openModal('Nova Tech Identity', 'Konsep identitas visual AI Startup.', 'Assets/design 1.png', ['Branding', 'AI'], 'https://wa.me/62fgfgfxvc')">
+                <div class="h-72 rounded-xl overflow-hidden mb-6 bg-slate-900">
+                    <img src="Assets/design 1.png" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                </div>
+                <h3 class="text-2xl font-bold">Nova Tech Identity</h3>
+            </div>
+            <div class="glass-card p-6 reveal group cursor-pointer" onclick="openModal('Abstract Fluid', 'Eksplorasi simulasi cairan 3D.', 'Assets/design 2.png', ['3D Render', 'Art'], 'https://wa.me/6ghgbvcxvc')">
+                <div class="h-72 rounded-xl overflow-hidden mb-6 bg-slate-900">
+                    <img src="Assets/design 2.png" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                </div>
+                <h3 class="text-2xl font-bold">Abstract Fluid</h3>
+            </div>
+        </div>
+
+         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
+            <div class="glass-card p-6 reveal group cursor-pointer" onclick="openModal('Nova Tech Identity', 'Konsep identitas visual AI Startup.', 'Assets/Design 3.png', ['Branding', 'AI'], 'https://wa.me/62gfhfghfghfg')">
+                <div class="h-72 rounded-xl overflow-hidden mb-6 bg-slate-900">
+                    <img src="Assets/Design 3.png" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                </div>
+                <h3 class="text-2xl font-bold">Nova Tech Identity</h3>
+            </div>
+            <div class="glass-card p-6 reveal group cursor-pointer" onclick="openModal('Abstract Fluid', 'Eksplorasi simulasi cairan 3D.', 'Assets/design 4.png', ['3D Render', 'Art'], 'https://wa.me/62fghghghfghfg')">
+                <div class="h-72 rounded-xl overflow-hidden mb-6 bg-slate-900">
+                    <img src="Assets/design 4.png" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                </div>
+                <h3 class="text-2xl font-bold">Abstract Fluid</h3>
+            </div>
+        </div>
+    </section>
+
+     <section id="uiux-work" class="flex-col">
+        <div class="w-full mb-16 text-center md:text-left">
+            <h2 class="text-4xl font-bold mb-4 reveal">Ui Ux Design</h2>
+            <div class="h-1 w-20 bg-sky-500 mx-auto md:mx-0 reveal"></div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full mb-12">
+            <div class="glass-card p-6 reveal group cursor-pointer" onclick="openModal('Italian Food Mobile App', 'Aplikasi mobile untuk pemesanan makanan Italia dengan visual yang menggugah selera.', 'Assets/uiux 1.png', ['UI Design', 'Mobile'], 'https://wa.me/gfhfghfghdgh', 'https://www.behance.net/gallery/contoh-link')">
+                <div class="h-72 rounded-xl overflow-hidden mb-6 bg-slate-900">
+                    <img src="Assets/uiux 1.png" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                </div>
+                <h3 class="text-2xl font-bold">Italian Food Mobile App</h3>
+            </div>
+            <div class="glass-card p-6 reveal group cursor-pointer" onclick="openModal('Jejak Sporty Website', 'Platform e-commerce olahraga dengan pengalaman belanja yang dinamis.', 'Assets/uiux 2.png', ['UX Design', 'E-commerce'], 'https://wa.me/gfhfghfghdgh', 'https://www.figma.com/file/contoh-link')">
+                <div class="h-72 rounded-xl overflow-hidden mb-6 bg-slate-900">
+                    <img src="Assets/uiux 2.png" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                </div>
+                <h3 class="text-2xl font-bold">Jejak Sporty Website</h3>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
+            <div class="glass-card p-6 reveal group cursor-pointer" onclick="openModal('Nova Digital Agency', 'Redesign website agensi digital untuk tampilan yang lebih modern dan futuristik.', 'Assets/uiux 3.png', ['Web Design', 'Agency'], 'https://wa.me/56456353453', 'https://link-preview-anda.com')">
+                <div class="h-72 rounded-xl overflow-hidden mb-6 bg-slate-900">
+                    <img src="Assets/uiux 3.png" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                </div>
+                <h3 class="text-2xl font-bold">Nova Digital Agency</h3>
+            </div>
+            <div class="glass-card p-6 reveal group cursor-pointer" onclick="openModal('Yayasan Madani Alquran', 'Konsep desain untuk platform edukasi keagamaan yang inklusif.', 'Assets/uiux4.png', ['Educational', 'Platform'], 'https://wa.me/56456353453', 'https://link-yayasan-anda.com')">
+                <div class="h-72 rounded-xl overflow-hidden mb-6 bg-slate-900">
+                    <img src="Assets/uiux4.png" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                </div>
+                <h3 class="text-2xl font-bold">Yayasan Madani Alquran</h3>
+            </div>
+        </div>
+    </section>
+
+    <div id="modal-overlay" class="items-center justify-center p-4 md:p-8">
+        <div id="modal-content" class="bg-slate-900 w-full max-w-6xl max-h-[90vh] overflow-hidden rounded-[40px] border border-white/10 relative">
+            <button onclick="closeModal()" class="absolute top-6 right-6 text-white hover:text-sky-500 transition-colors z-20 bg-black/40 p-2 rounded-full backdrop-blur-md">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+            <div class="grid grid-cols-1 lg:grid-cols-12 h-full overflow-y-auto lg:overflow-hidden">
+                <div class="lg:col-span-7 h-80 lg:h-full">
+                    <img id="modal-image" src="" alt="Project" class="w-full h-full object-cover">
+                </div>
+                <div class="lg:col-span-5 p-8 md:p-12 flex flex-col justify-center">
+                    <h3 id="modal-title" class="text-3xl font-extrabold mb-6"></h3>
+                    <p id="modal-desc" class="text-slate-400 text-lg mb-8"></p>
+                    <div id="modal-tags" class="flex flex-wrap gap-3 mb-10"></div>
+                    
+                    <div class="flex flex-col gap-4">
+                        <a id="modal-link" href="#" target="_blank" class="bg-sky-500 text-white py-4 rounded-2xl font-bold hover:bg-sky-400 transition-all btn-glow text-center">
+                            Mulai Proyek Serupa
+                        </a>
+                        <a id="modal-preview-btn" href="#" target="_blank" class="border border-white/20 text-white py-4 rounded-2xl font-bold hover:bg-white/10 transition-all text-center">
+                            Lihat Live Website ↗
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section id="about" class="flex-col !items-start">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 w-full items-center">
+            <div class="reveal relative">
+                <div class="absolute -top-10 -left-10 w-32 h-32 bg-sky-500/10 rounded-full blur-3xl"></div>
+                <h2 class="text-5xl font-extrabold mb-8 leading-tight">Membangun Narasi Lewat <span class="text-sky-500">Visual</span>.</h2>
+                <div class="space-y-6 text-slate-400 text-lg">
+                    <p>Halo! Saya adalah seorang desainer grafis dengan pengalaman lebih dari 5 tahun dalam menciptakan identitas visual yang bermakna.</p>
+                </div>
+                <div class="grid grid-cols-2 gap-6 mt-12">
+                    <div class="glass-card p-6 border-l-4 border-l-sky-500">
+                        <div class="text-3xl font-bold text-white mb-1">50+</div>
+                        <div class="text-sm text-slate-500 uppercase tracking-widest">Klien Global</div>
+                    </div>
+                    <div class="glass-card p-6 border-l-4 border-l-sky-500">
+                        <div class="text-3xl font-bold text-white mb-1">120+</div>
+                        <div class="text-sm text-slate-500 uppercase tracking-widest">Proyek Selesai</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-6 reveal">
+                <h3 class="text-2xl font-bold mb-4">Keahlian Utama</h3>
+                <div class="glass-card p-6 hover:bg-sky-500/5 group">
+                    <div class="flex items-center gap-4">
+                        <div class="bg-sky-500/20 p-3 rounded-2xl text-sky-400 group-hover:bg-sky-500 group-hover:text-white transition-all">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" /></svg>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-xl">Brand Identity</h4>
+                            <p class="text-slate-500 text-sm">Logo, Guideline, & Positioning</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="glass-card p-6 hover:bg-sky-500/5 group">
+                    <div class="flex items-center gap-4">
+                        <div class="bg-sky-500/20 p-3 rounded-2xl text-sky-400 group-hover:bg-sky-500 group-hover:text-white transition-all">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-xl">3D Visualization</h4>
+                            <p class="text-slate-500 text-sm">Product Render & Abstract Art</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="glass-card p-6 hover:bg-sky-500/5 group">
+                    <div class="flex items-center gap-4">
+                        <div class="bg-sky-500/20 p-3 rounded-2xl text-sky-400 group-hover:bg-sky-500 group-hover:text-white transition-all">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-xl">UI/UX Design</h4>
+                            <p class="text-slate-500 text-sm">Web & App Interfaces</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="p-24 text-center border-t border-white/5 bg-slate-950/50">
+        <h2 class="text-4xl md:text-6xl font-extrabold mb-8 reveal italic">Punya ide luar biasa?</h2>
+        <div class="flex flex-wrap justify-center gap-6 reveal">
+            <a href="mailto:siapaajboleh@gmail.com" class="bg-white text-black px-10 py-4 rounded-full font-bold hover:bg-sky-500 hover:text-white transition-all text-lg shadow-2xl shadow-white/5">Kirim Email</a>
+        </div>
+        <p class="text-slate-600 mt-20">&copy; 2024 GD.STUDIO — Creative Visualist.</p>
+    </footer>
+
+    <script>
+        // --- THREE.JS ---
+        let scene, camera, renderer, particles;
+        function init3D() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ canvas: document.querySelector('#bg-canvas'), antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            const geo = new THREE.BufferGeometry();
+            const count = 2000;
+            const pos = new Float32Array(count * 3);
+            for(let i=0; i<count*3; i++) pos[i] = (Math.random()-0.5)*100;
+            geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+            particles = new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.05, color: '#38bdf8', transparent: true, opacity: 0.3 }));
+            scene.add(particles);
+            camera.position.z = 20;
+        }
+        function animate() {
+            requestAnimationFrame(animate);
+            particles.rotation.y += 0.0005;
+            renderer.render(scene, camera);
+        }
+
+        // --- GSAP ---
+        function initGSAP() {
+            gsap.registerPlugin(ScrollTrigger);
+            gsap.to("#hero-title", { opacity: 1, y: 0, duration: 1, delay: 0.2 });
+            gsap.to("#hero-subtitle", { opacity: 1, y: 0, duration: 1, delay: 0.4 });
+            gsap.to("#hero-btns", { opacity: 1, y: 0, duration: 1, delay: 0.6 });
+            gsap.to("#hero-img-container", { opacity: 1, y: 0, duration: 1, delay: 0.8 });
+
+            document.querySelectorAll('.reveal').forEach(el => {
+                gsap.from(el, { scrollTrigger: el, y: 50, opacity: 0, duration: 1 });
+            });
+        }
+
+        // --- MODAL DENGAN PREVIEW BUTTON ---
+        function openModal(title, desc, image, tags, link, liveLink) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-desc').innerText = desc;
+            document.getElementById('modal-image').src = image;
+            
+            // Link WhatsApp
+            document.getElementById('modal-link').href = link || "#"; 
+
+            // Link Preview Website
+            const previewBtn = document.getElementById('modal-preview-btn');
+            if (liveLink) {
+                previewBtn.href = liveLink;
+                previewBtn.style.display = 'block'; // Tampilkan jika ada link
+            } else {
+                previewBtn.style.display = 'none'; // Sembunyikan jika tidak ada
+            }
+
+            const tagContainer = document.getElementById('modal-tags');
+            tagContainer.innerHTML = '';
+            tags.forEach(tag => {
+                const s = document.createElement('span');
+                s.className = "bg-sky-500/10 border border-sky-500/20 text-sky-400 px-4 py-1.5 rounded-xl text-sm font-bold";
+                s.innerText = tag;
+                tagContainer.appendChild(s);
+            });
+            document.getElementById('modal-overlay').classList.add('active-modal');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            document.getElementById('modal-overlay').classList.remove('active-modal');
+            document.body.style.overflow = 'auto';
+        }
+
+        window.onload = () => { init3D(); animate(); initGSAP(); }
+        window.onresize = () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+    </script>
+</body>
+</html>
